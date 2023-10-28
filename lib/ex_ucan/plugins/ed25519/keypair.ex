@@ -2,15 +2,16 @@ defmodule ExUcan.Plugins.Ed25519.Keypair do
   @moduledoc """
   Encapsulates Ed25519 Keypair generation and other utilities
   """
+  alias ExUcan.Plugins.Ed25519.Crypto
   # TODO: more doc..
 
   # TODO: Need type doc
   @type t :: %__MODULE__{
-    jwt_alg: String.t(),
-    secret_key: binary(),
-    public_key: binary(),
-    exportable: boolean()
-  }
+          jwt_alg: String.t(),
+          secret_key: binary(),
+          public_key: binary(),
+          exportable: boolean()
+        }
 
   defstruct(
     jwt_alg: "EdDSA",
@@ -19,10 +20,12 @@ defmodule ExUcan.Plugins.Ed25519.Keypair do
     exportable: false
   )
 
-
   @spec create(boolean()) :: __MODULE__.t()
+  def create(exportable? \\ true)
+
   def create(exportable?) do
     {pub, priv} = :crypto.generate_key(:eddsa, :ed25519)
+
     __MODULE__.__struct__(
       jwt_alg: "EdDSA",
       secret_key: priv,
@@ -31,9 +34,8 @@ defmodule ExUcan.Plugins.Ed25519.Keypair do
     )
   end
 
-  # @spec
-  def did() do
-
+  @spec did(__MODULE__.t()) :: String.t()
+  def did(keypair) do
+    Crypto.publickey_to_did(keypair.public_key)
   end
-
 end
