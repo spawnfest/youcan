@@ -12,7 +12,7 @@ jobs:
     runs-on: ubuntu-22.04
     strategy:
       matrix:
-        elixir: [1.15.7]
+        elixir: [1.15.5]
         otp: [26.0.2]
     steps:
     - name: Set up Elixir
