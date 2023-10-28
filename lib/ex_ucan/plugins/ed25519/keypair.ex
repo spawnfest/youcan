@@ -4,6 +4,7 @@ defmodule ExUcan.Plugins.Ed25519.Keypair do
   """
   # TODO: more doc..
 
+  # TODO: Need type doc
   @type t :: %__MODULE__{
     jwt_alg: String.t(),
     secret_key: binary(),
@@ -18,6 +19,7 @@ defmodule ExUcan.Plugins.Ed25519.Keypair do
     exportable: false
   )
 
+
   @spec create(boolean()) :: __MODULE__.t()
   def create(exportable?) do
     {pub, priv} = :crypto.generate_key(:eddsa, :ed25519)
@@ -27,6 +29,11 @@ defmodule ExUcan.Plugins.Ed25519.Keypair do
       public_key: pub,
       exportable: exportable?
     )
+  end
+
+  # @spec
+  def did() do
+
   end
 
 end
