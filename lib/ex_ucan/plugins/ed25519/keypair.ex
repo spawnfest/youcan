@@ -18,14 +18,14 @@ defmodule ExUcan.Plugins.Ed25519.Keypair do
     exportable: false
   )
 
-  @spec create() :: __MODULE__.t()
-  def create() do
+  @spec create(boolean()) :: __MODULE__.t()
+  def create(exportable?) do
     {pub, priv} = :crypto.generate_key(:eddsa, :ed25519)
     __MODULE__.__struct__(
       jwt_alg: "EdDSA",
       secret_key: priv,
       public_key: pub,
-      exportable: false
+      exportable: exportable?
     )
   end
 
