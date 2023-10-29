@@ -58,6 +58,5 @@ defmodule ExUcan.Core.Structs.Ucan do
           signature: String.t()
         }
 
-  @derive Jason.Encoder
   defstruct [:header, :payload, :signed_data, :signature]
 end

@@ -2,8 +2,13 @@ defmodule ExUcan do
   @moduledoc """
   Documentation for `ExUcan`.
   """
+  alias ExUcan.Plugins.Ed25519
   alias ExUcan.Core.Token
   alias ExUcan.Core.Structs.Ucan
+
+  def create_keypair() do
+    Ed25519.Keypair.create()
+  end
 
   @spec build(struct(), map()) :: {:ok, Ucan.t()} | {:error, String.t()}
   def build(keypair, _params) do

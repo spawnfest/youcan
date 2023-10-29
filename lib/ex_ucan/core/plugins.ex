@@ -1,8 +1,18 @@
 defmodule ExUcan.Core.Plugins do
+  alias ExUcan.Plugins.Ed25519.Crypto
   # TODO: docs
 
   @spec verify_issuer_alg(String.t(), String.t()) :: boolean()
   def verify_issuer_alg(did, jwt_alg) do
+  end
+
+  @spec verify_signature(String.t(), String.t(), String.t()) :: boolean()
+  def verify_signature(did, data, signature) do
+    {:ok, public_key} = Crypto.did_to_publickey(did)
+    IO.inspect(public_key)
+    IO.inspect(data)
+    IO.inspect(signature)
+    :public_key.verify(data, :ignored, signature, {:ed_pub, :ed25519, public_key})
   end
 
   @spec parseDidMethod(String.t()) :: String.t()

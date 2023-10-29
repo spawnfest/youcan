@@ -2,6 +2,8 @@ defmodule ExUcan.Core.Token do
   @moduledoc """
   Creates and manages UCAN tokens
   """
+  alias ExUcan.Core.Plugins
+  alias ExUnit.DuplicateDescribeError
   alias ExUcan.Core.Structs.UcanHeader
   alias ExUcan.Core.Keymaterial
   alias ExUcan.Core.Structs.Ucan
@@ -76,8 +78,17 @@ defmodule ExUcan.Core.Token do
     "#{ucan.signed_data}.#{ucan.signature}"
   end
 
+  # TODO: Refactor thiess
   @spec validate(String.t()) :: {:ok, Ucan.t()} | {:error, String.t()}
   def validate(encoded_ucan) do
+    with {:ok, {header, payload}} <- parse_encoded_ucan(encoded_ucan),
+         false <- is_expired?(payload),
+         false <- is_too_early?(payload) do
+      [encoded_header, encoded_payload, encoded_sign] = String.split(encoded_ucan, ".")
+      {:ok, signature} = Base.url_decode64(encoded_sign, padding: false)
+      data = "#{encoded_header}.#{encoded_payload}"
+      Plugins.verify_signature(payload.iss, data, signature)
+    end
   end
 
   defp add_nonce(true), do: Utils.generate_nonce()
@@ -92,6 +103,7 @@ defmodule ExUcan.Core.Token do
 
     signed_data = "#{encoded_header}.#{encoded_payload}"
     signature = Keymaterial.sign(keypair, signed_data)
+    IO.inspect(signature)
 
     %Ucan{
       header: header,
@@ -108,8 +120,14 @@ defmodule ExUcan.Core.Token do
     |> Base.url_encode64(padding: false)
   end
 
-  @spec is_expired?() :: boolean()
-  defp is_expired?() do
+  @spec is_expired?(UcanPayload.t()) :: boolean()
+  defp is_expired?(%UcanPayload{} = ucan_payload) do
+    ucan_payload.exp < DateTime.utc_now() |> DateTime.to_unix()
+  end
+
+  @spec is_too_early?(UcanPayload.t()) :: boolean()
+  defp is_too_early?(%UcanPayload{nbf: nbf}) do
+    nbf > DateTime.utc_now() |> DateTime.to_unix()
   end
 
   @spec parse_encoded_ucan(String.t()) ::
@@ -118,11 +136,11 @@ defmodule ExUcan.Core.Token do
     opts = [padding: false]
 
     with {:ok, {header, payload, sign}} <- tear_into_parts(encoded_ucan),
-         {:ok, decoded_header} <- Base.url_decode64(header, opts) |> IO.inspect(),
-         {:ok, header} <- Jason.decode(decoded_header, keys: :atoms) |> IO.inspect(),
+         {:ok, decoded_header} <- Base.url_decode64(header, opts),
+         {:ok, header} <- Jason.decode(decoded_header, keys: :atoms),
          {:ok, decoded_payload} <- Base.url_decode64(payload, opts),
          {:ok, payload} <- Jason.decode(decoded_payload, keys: :atoms) do
-      {:ok, struct(UcanHeader, header), struct(UcanPayload, payload)}
+      {:ok, {struct(UcanHeader, header), struct(UcanPayload, payload)}}
     end
   end
 
