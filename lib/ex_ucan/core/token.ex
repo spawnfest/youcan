@@ -1,6 +1,6 @@
 defmodule ExUcan.Core.Token do
   @moduledoc """
-  Creates and manages UCAN tokens
+  Core functions for the creation and management of UCAN tokens
   """
   alias ExUcan.Builder
   alias ExUcan.Core.Structs.Ucan

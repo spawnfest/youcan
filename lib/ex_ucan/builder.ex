@@ -116,19 +116,6 @@ defmodule ExUcan.Builder do
     %{builder | add_nonce?: true}
   end
 
-  # TODO: try to do this function
-  @doc """
-  Includes a UCAN in the list of proofs for the UCAN to be built.
-  Note that the proof's audience must match this UCAN's issuer
-  or else the proof chain will be invalidated!
-  The proof is encoded into a [Cid], hashed via the [UcanBuilder::default_hasher()]
-  algorithm, unless one is provided.
-  """
-  @spec witnessed_by(__MODULE__.t()) :: __MODULE__.t()
-  def witnessed_by(builder) do
-    builder
-  end
-
   @doc """
   Claim a capability by inheritance (from an authorizing proof) or
   implicitly by ownership of the resource by this UCAN's issuer
@@ -136,10 +123,6 @@ defmodule ExUcan.Builder do
   @spec claiming_capability(__MODULE__.t(), Capability) :: __MODULE__.t()
   def claiming_capability(builder, capability) do
     %{builder | capabilities: builder.capabilities ++ [capability]}
-  end
-
-  def delegating_from(builder) do
-    builder
   end
 
   @doc """
