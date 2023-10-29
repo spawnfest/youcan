@@ -1,6 +1,9 @@
+![ticket](doc_assets/ticket-3.png?raw=true  "ticket")
 # ExUcan
 
-**Decentralized Auth with [UCANs](https://ucan.xyz/)**
+> Decentralized Auth with [UCANs](https://ucan.xyz/)
+
+**Elixir library to help the next generation of applications make use of UCANs in their authorization flows. To learn more about UCANs and how you might use them in your application, visit [https://ucan.xyz](https://ucan.xyz) or read the [spec](https://github.com/ucan-wg/spec).**
 
 ## Installation
 
