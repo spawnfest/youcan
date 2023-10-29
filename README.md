@@ -212,9 +212,9 @@ iex> ucan_payload =
 The library is no-where feature parity with ucan [rust](https://github.com/ucan-wg/rs-ucan/tree/main) library or with the spec. The spec itself is nearing a 1.0.0, and is under-review.
 But good thing is we have now laid the basic foundations. The next immediate additions would be,
 
-- [] - Proof encodings as CID (Content Addressable Data)
-- [] - Delegation semantics
-- [] - Verifying UCAN invocations
+- [ ] - Proof encodings as CID (Content Addressable Data)
+- [ ] - Delegation semantics
+- [ ] - Verifying UCAN invocations
 
 
 ## Acknowledgement
