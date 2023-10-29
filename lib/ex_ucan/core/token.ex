@@ -3,9 +3,8 @@ defmodule ExUcan.Core.Token do
   Creates and manages UCAN tokens
   """
   alias ExUcan.Core.Plugins
-  alias ExUnit.DuplicateDescribeError
   alias ExUcan.Core.Structs.UcanHeader
-  alias ExUcan.Core.Keymaterial
+  alias ExUcan.Keymaterial
   alias ExUcan.Core.Structs.Ucan
   alias ExUcan.Core.Utils
   alias ExUcan.Core.Structs.UcanPayload

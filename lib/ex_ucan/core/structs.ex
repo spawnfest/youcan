@@ -1,18 +1,7 @@
-defmodule ExUcan.Core.Structs.Capability do
-  # TODO: All the docs needed
-  @type t :: %__MODULE__{
-          resource: String.t(),
-          ability: String.t(),
-          caveat: list(map())
-        }
-  defstruct [:resource, :ability, :caveat]
-end
-
 defmodule ExUcan.Core.Structs.UcanHeader do
   @moduledoc """
   Ucan header
   """
-
   @type t :: %__MODULE__{
           alg: String.t(),
           typ: String.t()
@@ -26,7 +15,7 @@ defmodule ExUcan.Core.Structs.UcanPayload do
   @moduledoc """
   Ucan Payload
   """
-  alias ExUcan.Core.Structs.Capability
+  alias ExUcan.Core.Capability
 
   @type t :: %__MODULE__{
           ucv: String.t(),

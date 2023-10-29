@@ -2,12 +2,19 @@ defmodule ExUcan do
   @moduledoc """
   Documentation for `ExUcan`.
   """
-  alias ExUcan.Plugins.Ed25519
+  alias ExUcan.Keymaterial.Ed25519.Keypair
   alias ExUcan.Core.Token
   alias ExUcan.Core.Structs.Ucan
 
-  def create_keypair() do
-    Ed25519.Keypair.create()
+  @doc """
+  Creates a default keypair with EdDSA algorithm
+
+  This keypair can be later used for create UCAN tokens
+  Keypair generated with different algorithms like RSA will be coming soon..
+  """
+  @spec create_default_keypair() :: Keypair.t()
+  def create_default_keypair() do
+    Keypair.create()
   end
 
   @spec build(struct(), map()) :: {:ok, Ucan.t()} | {:error, String.t()}
@@ -24,3 +31,5 @@ defmodule ExUcan do
     Token.encode(ucan)
   end
 end
+
+# TODO: Need a proper UCAN builder like rust.

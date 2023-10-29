@@ -1,8 +1,8 @@
-defmodule ExUcan.Plugins.Ed25519.Crypto do
+defmodule ExUcan.Keymaterial.Ed25519.Crypto do
   @moduledoc """
   Crypto functions related to `ExUcan.Plugins.Ed25519.Keypair`
   """
-  alias ExUcan.Plugins.Utils
+  alias ExUcan.Keymaterial.Utils
 
   @edwards_did_prefix <<0xED, 0x01>>
 

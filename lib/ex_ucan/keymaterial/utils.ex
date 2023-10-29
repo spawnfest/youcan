@@ -1,4 +1,4 @@
-defmodule ExUcan.Plugins.Utils do
+defmodule ExUcan.Keymaterial.Utils do
   @moduledoc """
   Utilites related to plugins
   """
