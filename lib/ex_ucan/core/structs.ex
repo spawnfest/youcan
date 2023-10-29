@@ -1,3 +1,13 @@
+defmodule ExUcan.Core.Structs.Capability do
+  # TODO: All the docs needed
+  @type t :: %__MODULE__{
+          resource: String.t(),
+          ability: String.t(),
+          caveat: list(map())
+        }
+  defstruct [:resource, :ability, :caveat]
+end
+
 defmodule ExUcan.Core.Structs.UcanHeader do
   @moduledoc """
   Ucan header
@@ -9,17 +19,14 @@ defmodule ExUcan.Core.Structs.UcanHeader do
         }
 
   @derive Jason.Encoder
-  defstruct(
-    alg: "",
-    typ: ""
-  )
-
+  defstruct [:alg, :typ]
 end
 
 defmodule ExUcan.Core.Structs.UcanPayload do
   @moduledoc """
   Ucan Payload
   """
+  alias ExUcan.Core.Structs.Capability
 
   @type t :: %__MODULE__{
           ucv: String.t(),
@@ -29,22 +36,12 @@ defmodule ExUcan.Core.Structs.UcanPayload do
           exp: integer(),
           nnc: String.t(),
           fct: map(),
-          cap: map(),
+          cap: list(Capability.t()),
           prf: list(String.t())
         }
 
   @derive Jason.Encoder
-  defstruct(
-    ucv: "",
-    iss: "",
-    aud: "",
-    nbf: 0,
-    exp: nil,
-    nnc: "",
-    fct: %{},
-    cap: %{},
-    prf: []
-  )
+  defstruct [:ucv, :iss, :aud, :nbf, :exp, :nnc, :fct, :cap, :prf]
 end
 
 defmodule ExUcan.Core.Structs.Ucan do
@@ -62,10 +59,5 @@ defmodule ExUcan.Core.Structs.Ucan do
         }
 
   @derive Jason.Encoder
-  defstruct(
-    header: nil,
-    payload: nil,
-    signed_data: "",
-    signature: ""
-  )
+  defstruct [:header, :payload, :signed_data, :signature]
 end

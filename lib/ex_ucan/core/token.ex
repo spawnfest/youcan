@@ -11,19 +11,21 @@ defmodule ExUcan.Core.Token do
   @token_type "JWT"
   @version %{major: 0, minor: 10, patch: 0}
 
-  @spec build(params::%{
-    issuer: struct(),
-    audience: String.t(),
-    # Add capabilities struct later
-    capabilities: list(),
-    life_time_in_seconds: number(),
-    expiration: number(),
-    not_before: number(),
-    # Add Facts struct later
-    facts: list(),
-    proofs: list(String.t()),
-    add_nonce?: boolean()
-  }) :: Ucan.t()
+  @spec build(
+          params :: %{
+            issuer: struct(),
+            audience: String.t(),
+            # Add capabilities struct later
+            capabilities: list(),
+            life_time_in_seconds: number(),
+            expiration: number(),
+            not_before: number(),
+            # Add Facts struct later
+            facts: list(),
+            proofs: list(String.t()),
+            add_nonce?: boolean()
+          }
+        ) :: Ucan.t()
   def build(params) do
     {:ok, payload} = build_payload(%{params | issuer: Keymaterial.did(params.issuer)})
     sign_with_payload(payload, params.issuer)
@@ -74,12 +76,15 @@ defmodule ExUcan.Core.Token do
     "#{ucan.signed_data}.#{ucan.signature}"
   end
 
+  @spec validate(String.t()) :: {:ok, Ucan.t()} | {:error, String.t()}
+  def validate(encoded_ucan) do
+  end
+
   defp add_nonce(true), do: Utils.generate_nonce()
   defp add_nonce(false), do: nil
 
   @spec sign_with_payload(payload :: UcanPayload.t(), keypair :: struct()) :: Ucan.t()
   defp sign_with_payload(payload, keypair) do
-
     # TODO ExUcan.Core.Plugins.verify_issuer_alg
     header = %UcanHeader{alg: keypair.jwt_alg, typ: @token_type}
     encoded_header = encode_ucan_parts(header)
@@ -87,6 +92,7 @@ defmodule ExUcan.Core.Token do
 
     signed_data = "#{encoded_header}.#{encoded_payload}"
     signature = Keymaterial.sign(keypair, signed_data)
+
     %Ucan{
       header: header,
       payload: payload,
@@ -102,4 +108,34 @@ defmodule ExUcan.Core.Token do
     |> Base.url_encode64(padding: false)
   end
 
+  @spec is_expired?() :: boolean()
+  defp is_expired?() do
+  end
+
+  @spec parse_encoded_ucan(String.t()) ::
+          {:ok, {UcanHeader.t(), UcanPayload.t()}} | {:error, String.t()}
+  def parse_encoded_ucan(encoded_ucan) do
+    opts = [padding: false]
+
+    with {:ok, {header, payload, sign}} <- tear_into_parts(encoded_ucan),
+         {:ok, decoded_header} <- Base.url_decode64(header, opts) |> IO.inspect(),
+         {:ok, header} <- Jason.decode(decoded_header, keys: :atoms) |> IO.inspect(),
+         {:ok, decoded_payload} <- Base.url_decode64(payload, opts),
+         {:ok, payload} <- Jason.decode(decoded_payload, keys: :atoms) do
+      {:ok, struct(UcanHeader, header), struct(UcanPayload, payload)}
+    end
+  end
+
+  @spec tear_into_parts(String.t()) :: {:ok, tuple()} | {:error, String.t()}
+  defp tear_into_parts(encoded_ucan) do
+    err_msg =
+      "Can't parse UCAN: #{encoded_ucan}: Expected JWT format: 3 dot-separated base64url-encoded values."
+
+    case String.split(encoded_ucan, ".") |> List.to_tuple() do
+      {"", _, _} -> {:error, err_msg}
+      {_, "", _} -> {:error, err_msg}
+      {_, _, ""} -> {:error, err_msg}
+      ucan_parts -> {:ok, ucan_parts}
+    end
+  end
 end
