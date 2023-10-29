@@ -1,6 +1,6 @@
 defmodule Keymaterial.KeypairTest do
-  alias ExUcan.Keymaterial.Ed25519.Keypair
   alias ExUcan.Keymaterial
+  alias ExUcan.Keymaterial.Ed25519.Keypair
   use ExUnit.Case
 
   test "creating edDSA keypair" do

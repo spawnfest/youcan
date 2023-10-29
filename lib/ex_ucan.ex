@@ -2,9 +2,9 @@ defmodule ExUcan do
   @moduledoc """
   Documentation for `ExUcan`.
   """
-  alias ExUcan.Keymaterial.Ed25519.Keypair
-  alias ExUcan.Core.Token
   alias ExUcan.Core.Structs.Ucan
+  alias ExUcan.Core.Token
+  alias ExUcan.Keymaterial.Ed25519.Keypair
 
   @doc """
   Creates a default keypair with EdDSA algorithm
@@ -12,8 +12,8 @@ defmodule ExUcan do
   This keypair can be later used for create UCAN tokens
   Keypair generated with different algorithms like RSA will be coming soon..
   """
-  @spec create_default_keypair() :: Keypair.t()
-  def create_default_keypair() do
+  @spec create_default_keypair :: Keypair.t()
+  def create_default_keypair do
     Keypair.create()
   end
 

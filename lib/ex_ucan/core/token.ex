@@ -2,14 +2,14 @@ defmodule ExUcan.Core.Token do
   @moduledoc """
   Creates and manages UCAN tokens
   """
-  alias ExUcan.Keymaterial.Ed25519.Keypair
-  alias ExUcan.Core.Utils
   alias ExUcan.Builder
-  alias ExUcan.Keymaterial.Ed25519.Crypto
-  alias ExUcan.Core.Structs.UcanHeader
-  alias ExUcan.Keymaterial
   alias ExUcan.Core.Structs.Ucan
+  alias ExUcan.Core.Structs.UcanHeader
   alias ExUcan.Core.Structs.UcanPayload
+  alias ExUcan.Core.Utils
+  alias ExUcan.Keymaterial
+  alias ExUcan.Keymaterial.Ed25519.Crypto
+  alias ExUcan.Keymaterial.Ed25519.Keypair
 
   @token_type "JWT"
   @version %{major: 0, minor: 10, patch: 0}

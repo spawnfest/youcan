@@ -1,8 +1,10 @@
 defmodule ExUcanTest do
   alias ExUcan.Builder
+  alias ExUcan.Core.Utils
   alias ExUcan.Keymaterial.Ed25519.Keypair
   use ExUnit.Case
   doctest ExUcan
+  doctest Utils
 
   setup do
     keypair = ExUcan.create_default_keypair()
@@ -26,7 +28,7 @@ defmodule ExUcanTest do
       |> ExUcan.sign(meta.keypair)
       |> ExUcan.encode()
 
-      assert :ok = ExUcan.validate_token(token)
+    assert :ok = ExUcan.validate_token(token)
   end
 
   @tag :exucan
@@ -40,7 +42,7 @@ defmodule ExUcanTest do
       |> ExUcan.sign(meta.keypair)
       |> ExUcan.encode()
 
-      assert {:error, "Ucan token is already expired"} = ExUcan.validate_token(token)
+    assert {:error, "Ucan token is already expired"} = ExUcan.validate_token(token)
   end
 
   @tag :exucan
@@ -50,11 +52,11 @@ defmodule ExUcanTest do
       |> Builder.issued_by(meta.keypair)
       |> Builder.for_audience("did:key:z6MkwDK3M4PxU1FqcSt4quXghquH1MoWXGzTrNkNWTSy2NLD")
       |> Builder.with_expiration((DateTime.utc_now() |> DateTime.to_unix()) + 86_400)
-      |> Builder.not_before((DateTime.utc_now() |> DateTime.to_unix()) + (div(86400, 2)))
+      |> Builder.not_before((DateTime.utc_now() |> DateTime.to_unix()) + div(86_400, 2))
       |> Builder.build!()
       |> ExUcan.sign(meta.keypair)
       |> ExUcan.encode()
 
-      assert {:error, "Ucan token is not yet active"} = ExUcan.validate_token(token)
+    assert {:error, "Ucan token is not yet active"} = ExUcan.validate_token(token)
   end
 end

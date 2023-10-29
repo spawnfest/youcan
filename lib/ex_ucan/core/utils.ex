@@ -4,7 +4,15 @@ defmodule ExUcan.Core.Utils do
   """
   @chars "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
 
-  # TODO: docs
+  @doc """
+  Generate random string to use as a nonce
+
+  ## Examples
+      iex> ExUcan.Core.Utils.generate_nonce() |> String.length
+      6
+      iex> ExUcan.Core.Utils.generate_nonce(10) |> String.length
+      10
+  """
   def generate_nonce(len \\ 6)
 
   def generate_nonce(len) do

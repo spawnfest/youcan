@@ -2,10 +2,10 @@ defmodule ExUcan.Builder do
   @moduledoc """
   Builder functions for UCAN tokens
   """
+  alias ExUcan.Core.Capability
   alias ExUcan.Core.Structs.UcanPayload
   alias ExUcan.Core.Token
   alias ExUcan.Keymaterial.Ed25519.Keypair
-  alias ExUcan.Core.Capability
 
   @type t :: %__MODULE__{
           issuer: Keypair,
@@ -38,8 +38,8 @@ defmodule ExUcan.Builder do
     - `with_lifetime` or `with_expiration`.
     To finalise the builder, call its `build` or `build_parts` method.
   """
-  @spec default() :: __MODULE__.t()
-  def default() do
+  @spec default :: __MODULE__.t()
+  def default do
     %__MODULE__{
       issuer: nil,
       audience: nil,
