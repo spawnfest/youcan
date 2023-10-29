@@ -1,6 +1,6 @@
 # ExUcan
 
-**Decentralized Auth with [UCAN](https://ucan.xyz/)**
+**Decentralized Auth with [UCANs](https://ucan.xyz/)**
 
 ## Installation
 
