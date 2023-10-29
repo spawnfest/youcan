@@ -14,29 +14,4 @@ defmodule CapabilityTest do
     cap_maps = Capabilities.sequence_to_map(cap_sequence)
     assert Capabilities.map_to_sequence(cap_maps) == cap_sequence
   end
-
-  test "it_rejects_non_compliant_json" do
-    failure_cases = [
-      {
-        [],
-        "resources must be map"
-      },
-      {
-        %{"resource:foo" => []},
-        "abilities must be map"
-      },
-      {
-        %{"resource:foo" => {}},
-        "resource must have at least one ability"
-      },
-      {
-        %{"resource:foo" => %{"ability/read" => %{}}},
-        "caveats must be a list"
-      },
-      {
-        %{"resource:foo" => %{"ability/read" => [1]}},
-        "caveat must be object"
-      }
-    ]
-  end
 end

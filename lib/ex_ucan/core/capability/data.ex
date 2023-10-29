@@ -1,5 +1,8 @@
 defmodule ExUcan.Core.Capability do
-  # TODO: All the docs needed
+  @moduledoc """
+  Capabilities are a list of `resources`, and the `abilities` that we
+  can make on the `resource` with some optional `caveats`.
+  """
   @type t :: %__MODULE__{
           resource: String.t(),
           ability: String.t(),
@@ -7,6 +10,11 @@ defmodule ExUcan.Core.Capability do
         }
   defstruct [:resource, :ability, :caveat]
 
+  @doc """
+  Creates a new capability with given resource, ability and caveat
+
+  See `/test/capability_test.exs`
+  """
   @spec new(String.t(), String.t(), list()) :: __MODULE__.t()
   def new(resource, ability, caveat) do
     %__MODULE__{
@@ -19,23 +27,19 @@ end
 
 defmodule ExUcan.Core.Capabilities do
   @moduledoc """
-  Capabilities always deals with capabilites as map of maps
-  map<String: map<String: list()>>
+  Handling conversions of different type of group of capabilities
+
+  `Capabilities` are always maps of maps
+
+  type reference - map<String: map<String: list()>>
   """
   alias ExUcan.Core.Capability
-  # TODO: All the docs needed
 
-  # def validate(capabilities) when is_map(capabilities) do
-  #   capabilities
-  #   |> Enum.reduce_while(%{}, fn {resource, ability}, caps ->
-  #     # ability should be map
-  #     #   iter through ability
+  @doc """
+  Convert capabilites represented in maps to list of capabilites
 
-  #   end)
-  # end
-
-  def validate(_), do: {:error, "Capabilities must be an object."}
-
+  See `/test/capability_test.exs`
+  """
   @spec map_to_sequence(map()) :: list(Capability.t())
   def map_to_sequence(capabilities) do
     capabilities
@@ -45,6 +49,11 @@ defmodule ExUcan.Core.Capabilities do
     end)
   end
 
+  @doc """
+  Convert capabilites represented as list of capabilities to maps of maps
+
+  See `/test/capability_test.exs`
+  """
   @spec sequence_to_map(list(Capability.t())) :: map()
   def sequence_to_map(capabilites) do
     capabilites

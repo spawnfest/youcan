@@ -1,4 +1,5 @@
 ![ticket](doc_assets/ticket-4.png?raw=true  "ticket")
+
 # ExUcan
 
 > Decentralized Auth with [UCANs](https://ucan.xyz/)
@@ -171,7 +172,7 @@ ExUcan.validate_token(token)
 
 ### Adding Capabilities
 
-`capabilities` are an list of `resources`, the `abilities` that we can make on the `resource` with some optional `caveats`.
+`capabilities` are a list of `resources`, and the `abilities` that we can make on the `resource` with some optional `caveats`.
 
 
 ```elixir
@@ -212,12 +213,14 @@ iex> ucan_payload =
 The library is no-where feature parity with ucan [rust](https://github.com/ucan-wg/rs-ucan/tree/main) library or with the spec. The spec itself is nearing a 1.0.0, and is under-review.
 But good thing is we have now laid the basic foundations. The next immediate additions would be,
 
-- [ ] - Proof encodings as CID (Content Addressable Data)
-- [ ] - Delegation semantics
-- [ ] - Verifying UCAN invocations
+- [ ] Proof encodings as CID (Content Addressable Data)
+- [ ] Delegation semantics
+- [ ] Verifying UCAN invocations
 
 
 ## Acknowledgement
 
-This library has taken reference from both [ts-ucan](https://github.com/ucan-wg/ts-ucan) and rs-ucan.
+- This library has taken reference from both [ts-ucan](https://github.com/ucan-wg/ts-ucan) and rs-ucan.
+
+- ExUcan logo - <a href="https://www.flaticon.com/free-icons/validating-ticket" title="validating ticket icons">Validating ticket icons created by Good Ware - Flaticon</a>
 
