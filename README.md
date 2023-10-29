@@ -1,4 +1,4 @@
-![ticket](doc_assets/ticket-4.png?raw=true  "ticket")
+![ticket](doc_assets/ticket-4.png?raw=true)
 
 # ExUcan
 
