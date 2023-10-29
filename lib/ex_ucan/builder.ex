@@ -14,7 +14,6 @@ defmodule ExUcan.Builder do
           lifetime: number(),
           expiration: number(),
           not_before: number(),
-          # Add Facts struct later
           facts: map(),
           proofs: list(String.t()),
           add_nonce?: boolean()
@@ -143,11 +142,25 @@ defmodule ExUcan.Builder do
     builder
   end
 
-  # TODO: docs
   @doc """
+  Builds the UCAN `payload` from the `Builder` workflow
 
+  A runtime exception is raised if build payloads fails.
+
+  A sample builder workflow to create ucan payload
+  ```Elixir
+  alias ExUcan.Builder
+
+  keypair = ExUcan.create_default_keypair()
+
+  ExUcan.Builder.default
+  |> Builder.issued_by(keypair)
+  |> Builder.for_audience("did:key:z6MkwDK3M4PxU1FqcSt4quXghquH1MoWXGzTrNkNWTSy2N")
+  |> Builder.with_lifetime(864000)
+  |> Builder.build!
+  ```
   """
-  @spec build!(__MODULE__.t()) :: String.t()
+  @spec build!(__MODULE__.t()) :: UcanPayload.t()
   def build!(builder) do
     case Token.build_payload(builder) do
       {:ok, payload} -> payload
@@ -155,6 +168,11 @@ defmodule ExUcan.Builder do
     end
   end
 
+  @doc """
+  Builds the UCAN `payload` from the `Builder` struct
+
+  An error tuple with reason is returned if build payloads fails.
+  """
   @spec build(__MODULE__.t()) :: {:ok, UcanPayload.t()} | {:error, String.t()}
   def build(builder) do
     Token.build_payload(builder)

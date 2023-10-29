@@ -2,6 +2,8 @@ defmodule ExUcan.Core.Token do
   @moduledoc """
   Creates and manages UCAN tokens
   """
+  alias ExUcan.Keymaterial.Ed25519.Keypair
+  alias ExUcan.Core.Utils
   alias ExUcan.Builder
   alias ExUcan.Keymaterial.Ed25519.Crypto
   alias ExUcan.Core.Structs.UcanHeader
@@ -12,11 +14,17 @@ defmodule ExUcan.Core.Token do
   @token_type "JWT"
   @version %{major: 0, minor: 10, patch: 0}
 
-  # TODO: docs
-  @spec build_payload(params :: Builder) :: {:ok, UcanPayload.t()} | {:error, String.t()}
+  @doc """
+  Takes a UcanBuilder and generates a UCAN payload
+
+  Returns an error tuple with reason, if failed to generate payload
+  """
+  @spec build_payload(params :: Builder.t()) :: {:ok, UcanPayload.t()} | {:error, String.t()}
   def build_payload(%Builder{issuer: nil}), do: {:error, "must call issued_by/2"}
   def build_payload(%Builder{audience: nil}), do: {:error, "must call for_audience/2"}
-  def build_payload(%Builder{lifetime: nil}), do: {:error, "must call with_lifetime/2"}
+
+  def build_payload(%Builder{lifetime: life, expiration: exp}) when life == nil and exp == nil,
+    do: {:error, "must call with_lifetime/2 or with_expiration/2"}
 
   def build_payload(params) do
     did = Keymaterial.get_did(params.issuer)
@@ -27,13 +35,13 @@ defmodule ExUcan.Core.Token do
       exp = params.expiration || current_time_in_seconds + params.lifetime
 
       {:ok,
-       %{
+       %UcanPayload{
          ucv: "#{@version.major}.#{@version.minor}.#{@version.patch}",
          iss: did,
          aud: params.audience,
          nbf: params.not_before,
          exp: exp,
-         nnc: params.add_nonce?,
+         nnc: add_nonce(params.add_nonce? || false),
          fct: params.facts,
          cap: params.capabilities,
          prf: params.proofs
@@ -70,7 +78,13 @@ defmodule ExUcan.Core.Token do
     end
   end
 
-  @spec sign_with_payload(payload :: UcanPayload.t(), keypair :: struct()) :: Ucan.t()
+  @doc """
+  Signs the payload with keypair and returns a UCAN struct
+
+  - payload - Ucan payload type
+  - keypair - A Keymaterial implemented struct
+  """
+  @spec sign_with_payload(payload :: UcanPayload.t(), keypair :: Keypair.t()) :: Ucan.t()
   def sign_with_payload(payload, keypair) do
     header = %UcanHeader{alg: keypair.jwt_alg, typ: @token_type}
     encoded_header = encode_ucan_parts(header)
@@ -101,6 +115,7 @@ defmodule ExUcan.Core.Token do
 
   @spec is_too_early?(UcanPayload.t()) :: boolean()
   defp is_too_early?(%UcanPayload{nbf: nil}), do: false
+
   defp is_too_early?(%UcanPayload{nbf: nbf}) do
     nbf > DateTime.utc_now() |> DateTime.to_unix()
   end
@@ -134,7 +149,7 @@ defmodule ExUcan.Core.Token do
   end
 
   @spec verify_signature(String.t(), String.t(), String.t()) :: :ok | {:error, String.t()}
-  def verify_signature(did, data, signature) do
+  defp verify_signature(did, data, signature) do
     with {:ok, public_key} <- Crypto.did_to_publickey(did),
          true <- :public_key.verify(data, :ignored, signature, {:ed_pub, :ed25519, public_key}) do
       :ok
@@ -143,4 +158,7 @@ defmodule ExUcan.Core.Token do
       err -> err
     end
   end
+
+  defp add_nonce(true), do: Utils.generate_nonce()
+  defp add_nonce(false), do: nil
 end

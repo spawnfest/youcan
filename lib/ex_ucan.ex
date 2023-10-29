@@ -17,19 +17,25 @@ defmodule ExUcan do
     Keypair.create()
   end
 
-  # TODO: docs
+  @doc """
+   Signs the payload with keypair and returns a UCAN struct
+
+  - payload - Ucan payload type
+  - keypair - A Keymaterial implemented struct
+  """
   @spec sign(payload :: UcanPayload.t(), keypair :: struct()) :: Ucan.t()
   def sign(payload, keypair) do
     Token.sign_with_payload(payload, keypair)
   end
 
-  # TODO: to be removed
+  @doc """
+  Encode the Ucan.t() struct to JWT like token
+  """
   @spec encode(Ucan.t()) :: String.t()
   def encode(ucan) do
     Token.encode(ucan)
   end
 
-  # TODO: Test this after Builder is setup
   @doc """
   Validate the UCAN token's signature and timestamps
 

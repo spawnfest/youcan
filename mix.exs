@@ -11,6 +11,11 @@ defmodule ExUcan.MixProject do
       test_coverage: [
         summary: [
           threshold: 80
+        ],
+        ignore_modules: [
+          ExUcan.Core.Structs.Ucan,
+          ExUcan.Core.Structs.UcanHeader,
+          ExUcan.Core.Structs.UcanPayload
         ]
       ]
     ]
