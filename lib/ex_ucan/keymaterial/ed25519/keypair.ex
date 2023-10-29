@@ -19,6 +19,7 @@ defmodule ExUcan.Keymaterial.Ed25519.Keypair do
           public_key: binary()
         }
 
+  @derive Jason.Encoder
   defstruct [:jwt_alg, :secret_key, :public_key]
 
   @doc """

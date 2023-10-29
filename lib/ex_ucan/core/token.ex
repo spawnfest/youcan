@@ -2,69 +2,41 @@ defmodule ExUcan.Core.Token do
   @moduledoc """
   Creates and manages UCAN tokens
   """
+  alias ExUcan.Builder
   alias ExUcan.Keymaterial.Ed25519.Crypto
   alias ExUcan.Core.Structs.UcanHeader
   alias ExUcan.Keymaterial
   alias ExUcan.Core.Structs.Ucan
-  alias ExUcan.Core.Utils
   alias ExUcan.Core.Structs.UcanPayload
 
   @token_type "JWT"
   @version %{major: 0, minor: 10, patch: 0}
 
-  @spec build(
-          params :: %{
-            issuer: struct(),
-            audience: String.t(),
-            # Add capabilities struct later
-            capabilities: list(),
-            life_time_in_seconds: number(),
-            expiration: number(),
-            not_before: number(),
-            # Add Facts struct later
-            facts: list(),
-            proofs: list(String.t()),
-            add_nonce?: boolean()
-          }
-        ) :: Ucan.t()
-  def build(params) do
-    {:ok, payload} = build_payload(%{params | issuer: Keymaterial.did(params.issuer)})
-    sign_with_payload(payload, params.issuer)
-  end
-
   # TODO: docs
-  @spec build_payload(
-          params :: %{
-            issuer: String.t(),
-            audience: String.t(),
-            # Add capabilities struct later
-            capabilities: list(),
-            life_time_in_seconds: number(),
-            expiration: number(),
-            not_before: number(),
-            # Add Facts struct later
-            facts: list(),
-            proofs: list(String.t()),
-            add_nonce?: boolean()
-          }
-        ) :: UcanPayload.t()
+  @spec build_payload(params :: Builder) :: {:ok, UcanPayload.t()} | {:error, String.t()}
+  def build_payload(%Builder{issuer: nil}), do: {:error, "must call issued_by/2"}
+  def build_payload(%Builder{audience: nil}), do: {:error, "must call for_audience/2"}
+  def build_payload(%Builder{lifetime: nil}), do: {:error, "must call with_lifetime/2"}
+
   def build_payload(params) do
-    with {:iss, true} <- {:iss, String.starts_with?(params.issuer, "did")},
+    did = Keymaterial.get_did(params.issuer)
+
+    with {:iss, true} <- {:iss, String.starts_with?(did, "did")},
          {:aud, true} <- {:aud, String.starts_with?(params.audience, "did")} do
       current_time_in_seconds = DateTime.utc_now() |> DateTime.to_unix()
-      exp = params.expiration || current_time_in_seconds + params.life_time_in_seconds
+      exp = params.expiration || current_time_in_seconds + params.lifetime
 
       {:ok,
        %{
          ucv: "#{@version.major}.#{@version.minor}.#{@version.patch}",
-         iss: params.issuer,
+         iss: did,
          aud: params.audience,
-         nbf: params[:not_before] || nil,
+         nbf: params.not_before,
          exp: exp,
-         nnc: add_nonce(params[:add_nonce] || false),
-         fct: params[:facts] || [],
-         cap: params[:capabilities] || [],
-         prf: params[:proofs] || []
+         nnc: params.add_nonce?,
+         fct: params.facts,
+         cap: params.capabilities,
+         prf: params.proofs
        }}
     else
       {:iss, false} -> {:error, "The issuer must be a DID"}
@@ -85,28 +57,27 @@ defmodule ExUcan.Core.Token do
   @spec validate(String.t()) :: :ok | {:error, String.t() | map()}
   def validate(encoded_ucan) do
     with {:ok, {_header, payload}} <- parse_encoded_ucan(encoded_ucan),
-         :ok <- is_expired?(payload),
-         :ok <- is_too_early?(payload) do
+         {false, _} <- {is_expired?(payload), :expired},
+         {false, _} <- {is_too_early?(payload), :early} do
       [encoded_header, encoded_payload, encoded_sign] = String.split(encoded_ucan, ".")
       {:ok, signature} = Base.url_decode64(encoded_sign, padding: false)
       data = "#{encoded_header}.#{encoded_payload}"
       verify_signature(payload.iss, data, signature)
+    else
+      {true, :expired} -> {:error, "Ucan token is already expired"}
+      {true, :early} -> {:error, "Ucan token is not yet active"}
+      err -> err
     end
   end
 
-  defp add_nonce(true), do: Utils.generate_nonce()
-  defp add_nonce(false), do: nil
-
   @spec sign_with_payload(payload :: UcanPayload.t(), keypair :: struct()) :: Ucan.t()
-  defp sign_with_payload(payload, keypair) do
-    # TODO ExUcan.Core.Plugins.verify_issuer_alg
+  def sign_with_payload(payload, keypair) do
     header = %UcanHeader{alg: keypair.jwt_alg, typ: @token_type}
     encoded_header = encode_ucan_parts(header)
     encoded_payload = encode_ucan_parts(payload)
 
     signed_data = "#{encoded_header}.#{encoded_payload}"
     signature = Keymaterial.sign(keypair, signed_data)
-    IO.inspect(signature)
 
     %Ucan{
       header: header,
@@ -123,22 +94,15 @@ defmodule ExUcan.Core.Token do
     |> Base.url_encode64(padding: false)
   end
 
-  @spec is_expired?(UcanPayload.t()) :: :ok | {:error, String.t()}
+  @spec is_expired?(UcanPayload.t()) :: boolean()
   defp is_expired?(%UcanPayload{} = ucan_payload) do
-    if ucan_payload.exp < DateTime.utc_now() |> DateTime.to_unix() do
-      :ok
-    else
-      {:error, "Ucan token is already expired"}
-    end
+    ucan_payload.exp < DateTime.utc_now() |> DateTime.to_unix()
   end
 
-  @spec is_too_early?(UcanPayload.t()) :: :ok | {:error, String.t()}
+  @spec is_too_early?(UcanPayload.t()) :: boolean()
+  defp is_too_early?(%UcanPayload{nbf: nil}), do: false
   defp is_too_early?(%UcanPayload{nbf: nbf}) do
-    if nbf > DateTime.utc_now() |> DateTime.to_unix() do
-      :ok
-    else
-      {:error, "Ucan token is not yet active"}
-    end
+    nbf > DateTime.utc_now() |> DateTime.to_unix()
   end
 
   @spec parse_encoded_ucan(String.t()) ::

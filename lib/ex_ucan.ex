@@ -17,14 +17,10 @@ defmodule ExUcan do
     Keypair.create()
   end
 
-  # TODO: to be removed
-  @spec build(struct(), map()) :: {:ok, Ucan.t()} | {:error, String.t()}
-  def build(keypair, _params) do
-    Token.build(%{
-      issuer: keypair,
-      audience: "did:key:z6MkwDK3M4PxU1FqcSt4quXghquH1MoWXGzTrNkNWTSy2NLD",
-      expiration: 86400
-    })
+  # TODO: docs
+  @spec sign(payload :: UcanPayload.t(), keypair :: struct()) :: Ucan.t()
+  def sign(payload, keypair) do
+    Token.sign_with_payload(payload, keypair)
   end
 
   # TODO: to be removed

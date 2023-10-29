@@ -4,9 +4,7 @@ defprotocol ExUcan.Keymaterial do
 
   This protocol requires four functions to be implemented, `get_jwt_algorithm_name/1`,
   `get_did/1`, `sign/2` and `verify/3`
-
   """
-  alias ExUcan.Core.Structs.UcanPayload
 
   @doc """
   Returns the Jwt algorithm used by the Keypair to create Ucan
