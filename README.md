@@ -1,4 +1,4 @@
-![ticket](doc_assets/ticket-3.png?raw=true  "ticket")
+![ticket](doc_assets/ticket-4.png?raw=true  "ticket")
 # ExUcan
 
 > Decentralized Auth with [UCANs](https://ucan.xyz/)
