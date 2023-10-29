@@ -17,6 +17,7 @@ defmodule ExUcan do
     Keypair.create()
   end
 
+  # TODO: to be removed
   @spec build(struct(), map()) :: {:ok, Ucan.t()} | {:error, String.t()}
   def build(keypair, _params) do
     Token.build(%{
@@ -26,10 +27,20 @@ defmodule ExUcan do
     })
   end
 
+  # TODO: to be removed
   @spec encode(Ucan.t()) :: String.t()
   def encode(ucan) do
     Token.encode(ucan)
   end
-end
 
-# TODO: Need a proper UCAN builder like rust.
+  # TODO: Test this after Builder is setup
+  @doc """
+  Validate the UCAN token's signature and timestamps
+
+  - encoded_token - Ucan token
+  """
+  @spec validate_token(String.t()) :: :ok | {:error, String.t()}
+  def validate_token(encoded_token) do
+    Token.validate(encoded_token)
+  end
+end

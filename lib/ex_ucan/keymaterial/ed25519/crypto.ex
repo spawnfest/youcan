@@ -2,19 +2,44 @@ defmodule ExUcan.Keymaterial.Ed25519.Crypto do
   @moduledoc """
   Crypto functions related to `ExUcan.Plugins.Ed25519.Keypair`
   """
-  alias ExUcan.Keymaterial.Utils
 
+  # https://github.com/multiformats/multicodec/blob/e9ecf587558964715054a0afcc01f7ace220952c/table.csv#L94 */
   @edwards_did_prefix <<0xED, 0x01>>
 
-  # TODO: doc
-  @spec did_to_publickey(did :: String.t()) :: binary()
-  def did_to_publickey(did) do
-    Utils.key_bytes_from_did(did, @edwards_did_prefix)
+  # z is the multibase prefix for base58btc byte encoding
+  @base58_did_prefix "did:key:z"
+
+  @doc """
+  Generate DID from publickey bytes
+
+  - publickey_bytes - Public key
+  - prefix - byte prefix for the algorithm using for signing, (<<0xed, 0x01>> for EdDSA)
+  """
+  @spec did_to_publickey(did :: String.t()) :: {:ok, binary()} | {:error, String.t()}
+  def did_to_publickey("did:key:z" <> non_prefix_did) do
+    bytes = Base58.decode(non_prefix_did)
+    <<a::size(8), b::size(8), pub::binary>> = bytes
+
+    if <<a, b>> == @edwards_did_prefix do
+      {:ok, pub}
+    else
+      {:error, "Expected prefix #{inspect(@edwards_did_prefix)}"}
+    end
   end
 
-  # TODO: doc
+  def did_to_publickey(_did),
+    do: {:error, "Please use a base58-encoded DID formatted `did:key:z..."}
+
+  @doc """
+  Generate DID from publickey bytes
+
+  - publickey_bytes - Public key
+  - prefix - byte prefix for the algorithm using for signing, (<<0xed, 0x01>> for EdDSA)
+  """
   @spec publickey_to_did(pubkey :: binary()) :: String.t()
   def publickey_to_did(pubkey) do
-    Utils.did_from_key_bytes(pubkey, @edwards_did_prefix)
+    bytes = <<@edwards_did_prefix::binary, pubkey::binary>>
+    base58key = Base58.encode(bytes)
+    @base58_did_prefix <> base58key
   end
 end

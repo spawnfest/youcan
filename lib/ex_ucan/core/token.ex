@@ -2,7 +2,7 @@ defmodule ExUcan.Core.Token do
   @moduledoc """
   Creates and manages UCAN tokens
   """
-  alias ExUcan.Core.Plugins
+  alias ExUcan.Keymaterial.Ed25519.Crypto
   alias ExUcan.Core.Structs.UcanHeader
   alias ExUcan.Keymaterial
   alias ExUcan.Core.Structs.Ucan
@@ -77,16 +77,20 @@ defmodule ExUcan.Core.Token do
     "#{ucan.signed_data}.#{ucan.signature}"
   end
 
-  # TODO: Refactor thiess
-  @spec validate(String.t()) :: {:ok, Ucan.t()} | {:error, String.t()}
+  @doc """
+  Validate the UCAN token's signature and timestamps
+
+  - encoded_token - Ucan token
+  """
+  @spec validate(String.t()) :: :ok | {:error, String.t() | map()}
   def validate(encoded_ucan) do
-    with {:ok, {header, payload}} <- parse_encoded_ucan(encoded_ucan),
-         false <- is_expired?(payload),
-         false <- is_too_early?(payload) do
+    with {:ok, {_header, payload}} <- parse_encoded_ucan(encoded_ucan),
+         :ok <- is_expired?(payload),
+         :ok <- is_too_early?(payload) do
       [encoded_header, encoded_payload, encoded_sign] = String.split(encoded_ucan, ".")
       {:ok, signature} = Base.url_decode64(encoded_sign, padding: false)
       data = "#{encoded_header}.#{encoded_payload}"
-      Plugins.verify_signature(payload.iss, data, signature)
+      verify_signature(payload.iss, data, signature)
     end
   end
 
@@ -119,22 +123,30 @@ defmodule ExUcan.Core.Token do
     |> Base.url_encode64(padding: false)
   end
 
-  @spec is_expired?(UcanPayload.t()) :: boolean()
+  @spec is_expired?(UcanPayload.t()) :: :ok | {:error, String.t()}
   defp is_expired?(%UcanPayload{} = ucan_payload) do
-    ucan_payload.exp < DateTime.utc_now() |> DateTime.to_unix()
+    if ucan_payload.exp < DateTime.utc_now() |> DateTime.to_unix() do
+      :ok
+    else
+      {:error, "Ucan token is already expired"}
+    end
   end
 
-  @spec is_too_early?(UcanPayload.t()) :: boolean()
+  @spec is_too_early?(UcanPayload.t()) :: :ok | {:error, String.t()}
   defp is_too_early?(%UcanPayload{nbf: nbf}) do
-    nbf > DateTime.utc_now() |> DateTime.to_unix()
+    if nbf > DateTime.utc_now() |> DateTime.to_unix() do
+      :ok
+    else
+      {:error, "Ucan token is not yet active"}
+    end
   end
 
   @spec parse_encoded_ucan(String.t()) ::
-          {:ok, {UcanHeader.t(), UcanPayload.t()}} | {:error, String.t()}
+          {:ok, {UcanHeader.t(), UcanPayload.t()}} | {:error, String.t() | map()}
   def parse_encoded_ucan(encoded_ucan) do
     opts = [padding: false]
 
-    with {:ok, {header, payload, sign}} <- tear_into_parts(encoded_ucan),
+    with {:ok, {header, payload, _sign}} <- tear_into_parts(encoded_ucan),
          {:ok, decoded_header} <- Base.url_decode64(header, opts),
          {:ok, header} <- Jason.decode(decoded_header, keys: :atoms),
          {:ok, decoded_payload} <- Base.url_decode64(payload, opts),
@@ -143,7 +155,8 @@ defmodule ExUcan.Core.Token do
     end
   end
 
-  @spec tear_into_parts(String.t()) :: {:ok, tuple()} | {:error, String.t()}
+  @spec tear_into_parts(String.t()) ::
+          {:ok, {String.t(), String.t(), String.t()}} | {:error, String.t()}
   defp tear_into_parts(encoded_ucan) do
     err_msg =
       "Can't parse UCAN: #{encoded_ucan}: Expected JWT format: 3 dot-separated base64url-encoded values."
@@ -153,6 +166,17 @@ defmodule ExUcan.Core.Token do
       {_, "", _} -> {:error, err_msg}
       {_, _, ""} -> {:error, err_msg}
       ucan_parts -> {:ok, ucan_parts}
+    end
+  end
+
+  @spec verify_signature(String.t(), String.t(), String.t()) :: :ok | {:error, String.t()}
+  def verify_signature(did, data, signature) do
+    with {:ok, public_key} <- Crypto.did_to_publickey(did),
+         true <- :public_key.verify(data, :ignored, signature, {:ed_pub, :ed25519, public_key}) do
+      :ok
+    else
+      false -> {:error, "Failed to verify signature, check the params and try again"}
+      err -> err
     end
   end
 end
